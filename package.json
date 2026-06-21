@@ -5,6 +5,18 @@
   "version": "0.0.1",
   "publisher": "local-dev",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jpollard-github/mood-switcher.git"
+  },
+  "homepage": "https://github.com/jpollard-github/mood-switcher",
+  "files": [
+    "dist/**",
+    "resources/**",
+    "README.md",
+    "ROADMAP.md",
+    "LICENSE"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -26,6 +38,15 @@
     "onCommand:moodSwitcher.previewModePreset",
     "onCommand:moodSwitcher.restoreOriginalWorkspaceState",
     "onCommand:moodSwitcher.resetWorkspaceToUserSettings",
+    "onCommand:moodSwitcher.openModeSoundtrack",
+    "onCommand:moodSwitcher.exportSessionHistory",
+    "onCommand:moodSwitcher.importSessionHistory",
+    "onCommand:moodSwitcher.validateModeCommands",
+    "onCommand:moodSwitcher.openModeCommandPalette",
+    "onCommand:moodSwitcher.runSuggestedCommand",
+    "onCommand:moodSwitcher.openRankedMemoryDocs",
+    "onCommand:moodSwitcher.showModeRitual",
+    "onCommand:moodSwitcher.startBreakCycle",
     "onCommand:moodSwitcher.selectMode",
     "onCommand:moodSwitcher.startSession",
     "onCommand:moodSwitcher.stopSession",
@@ -97,6 +118,42 @@
         "title": "Mood Switcher: Reset Workspace To User Settings"
       },
       {
+        "command": "moodSwitcher.openModeSoundtrack",
+        "title": "Mood Switcher: Open Mode Soundtrack"
+      },
+      {
+        "command": "moodSwitcher.exportSessionHistory",
+        "title": "Mood Switcher: Export Session History"
+      },
+      {
+        "command": "moodSwitcher.importSessionHistory",
+        "title": "Mood Switcher: Import Session History"
+      },
+      {
+        "command": "moodSwitcher.validateModeCommands",
+        "title": "Mood Switcher: Validate Mode Commands"
+      },
+      {
+        "command": "moodSwitcher.openModeCommandPalette",
+        "title": "Mood Switcher: Open Mode Command Palette"
+      },
+      {
+        "command": "moodSwitcher.runSuggestedCommand",
+        "title": "Mood Switcher: Run Suggested Command"
+      },
+      {
+        "command": "moodSwitcher.openRankedMemoryDocs",
+        "title": "Mood Switcher: Open Ranked Memory Docs"
+      },
+      {
+        "command": "moodSwitcher.showModeRitual",
+        "title": "Mood Switcher: Show Mode Ritual"
+      },
+      {
+        "command": "moodSwitcher.startBreakCycle",
+        "title": "Mood Switcher: Start Break Cycle"
+      },
+      {
         "command": "moodSwitcher.selectMode",
         "title": "Mood Switcher: Select Mode"
       },
@@ -152,6 +209,40 @@
           },
           "description": "Maps each mood to a preferred VS Code color theme."
         },
+        "moodSwitcher.modeColorCustomizations": {
+          "type": "object",
+          "default": {
+            "Deep Work": {
+              "statusBar.background": "#733018",
+              "statusBar.foreground": "#fff7f0"
+            },
+            "Debugging Hell": {
+              "statusBar.background": "#7d1f37",
+              "statusBar.foreground": "#fff4f7"
+            },
+            "Writing Lodge": {
+              "statusBar.background": "#8e6848",
+              "statusBar.foreground": "#fffaf2"
+            },
+            "Arcade Mode": {
+              "statusBar.background": "#006f63",
+              "statusBar.foreground": "#effffb"
+            },
+            "Soft Focus": {
+              "statusBar.background": "#5077a6",
+              "statusBar.foreground": "#f8fbff"
+            },
+            "Night Drive": {
+              "statusBar.background": "#0f5f6c",
+              "statusBar.foreground": "#edfdfd"
+            },
+            "Ship It": {
+              "statusBar.background": "#7b5b16",
+              "statusBar.foreground": "#fffbea"
+            }
+          },
+          "description": "Optional workbench.colorCustomizations to apply per mood. Intended for status bar color cues."
+        },
         "moodSwitcher.modeSettings": {
           "type": "object",
           "default": {
@@ -159,7 +250,6 @@
               "editor.minimap.enabled": false,
               "editor.wordWrap": "off",
               "breadcrumbs.enabled": true,
-              "workbench.activityBar.location": "hidden",
               "workbench.editor.showTabs": "single",
               "zenMode.hideStatusBar": false
             },
@@ -174,27 +264,23 @@
               "editor.wordWrap": "on",
               "editor.minimap.enabled": false,
               "editor.stickyScroll.enabled": false,
-              "workbench.activityBar.location": "top",
               "workbench.editor.showTabs": "single"
             },
             "Arcade Mode": {
               "editor.cursorBlinking": "phase",
               "editor.minimap.enabled": true,
-              "terminal.integrated.defaultLocation": "editor",
-              "workbench.activityBar.location": "bottom"
+              "terminal.integrated.defaultLocation": "editor"
             },
             "Soft Focus": {
               "editor.minimap.enabled": false,
               "editor.wordWrap": "bounded",
               "editor.renderWhitespace": "selection",
-              "workbench.activityBar.location": "hidden",
               "workbench.editor.showTabs": "single"
             },
             "Night Drive": {
               "editor.cursorSmoothCaretAnimation": "on",
               "editor.minimap.enabled": false,
               "terminal.integrated.defaultLocation": "editor",
-              "workbench.activityBar.location": "bottom",
               "workbench.panel.defaultLocation": "right"
             },
             "Ship It": {
@@ -202,11 +288,326 @@
               "files.autoSaveDelay": 1000,
               "problems.visibility": true,
               "scm.defaultViewMode": "tree",
-              "workbench.activityBar.location": "top",
               "workbench.panel.defaultLocation": "bottom"
             }
           },
           "description": "Workspace and editor settings to apply for each mood."
+        },
+        "moodSwitcher.modeCommands": {
+          "type": "object",
+          "default": {
+            "Deep Work": {
+              "onActivate": [
+                {
+                  "command": "workbench.action.focusActiveEditorGroup"
+                }
+              ]
+            },
+            "Debugging Hell": {
+              "onActivate": [
+                {
+                  "command": "workbench.action.problems.focus"
+                }
+              ]
+            },
+            "Writing Lodge": {
+              "onActivate": [
+                {
+                  "command": "workbench.action.focusActiveEditorGroup"
+                }
+              ]
+            },
+            "Ship It": {
+              "onActivate": [
+                {
+                  "command": "workbench.view.scm"
+                }
+              ]
+            }
+          },
+          "description": "Optional VS Code commands to run per mood. Supports onActivate, onStartSession, and onStopSession hooks."
+        },
+        "moodSwitcher.modeSuggestedCommands": {
+          "type": "object",
+          "default": {
+            "Deep Work": [
+              {
+                "group": "Focus",
+                "label": "Focus Active Editor",
+                "description": "Bring attention back to the main editor",
+                "command": "workbench.action.focusActiveEditorGroup"
+              },
+              {
+                "group": "Focus",
+                "label": "Toggle Zen Mode",
+                "description": "Reduce distractions quickly",
+                "command": "workbench.action.toggleZenMode"
+              },
+              {
+                "group": "Mood Switcher",
+                "label": "Open Ranked Memory Docs",
+                "description": "Open the best matching project context docs",
+                "command": "moodSwitcher.openRankedMemoryDocs"
+              }
+            ],
+            "Debugging Hell": [
+              {
+                "group": "Debug",
+                "label": "Focus Problems",
+                "description": "Jump to problems and errors",
+                "command": "workbench.action.problems.focus"
+              },
+              {
+                "group": "Debug",
+                "label": "Open Run and Debug",
+                "description": "Open the debug view",
+                "command": "workbench.view.debug"
+              },
+              {
+                "group": "Mood Switcher",
+                "label": "Open Ranked Memory Docs",
+                "description": "Open debug notes and related docs",
+                "command": "moodSwitcher.openRankedMemoryDocs"
+              }
+            ],
+            "Writing Lodge": [
+              {
+                "group": "Writing",
+                "label": "Show Markdown Preview",
+                "description": "Preview the current markdown file",
+                "command": "markdown.showPreview"
+              },
+              {
+                "group": "Writing",
+                "label": "Toggle Word Wrap",
+                "description": "Adjust the writing view quickly",
+                "command": "editor.action.toggleWordWrap"
+              },
+              {
+                "group": "Mood Switcher",
+                "label": "Show Mode Ritual",
+                "description": "Review the writing ritual again",
+                "command": "moodSwitcher.showModeRitual"
+              }
+            ],
+            "Arcade Mode": [
+              {
+                "group": "Build",
+                "label": "Toggle Terminal",
+                "description": "Keep feedback loops close",
+                "command": "workbench.action.terminal.toggleTerminal"
+              },
+              {
+                "group": "Build",
+                "label": "Save All",
+                "description": "Persist the current iteration",
+                "command": "workbench.action.files.saveAll"
+              },
+              {
+                "group": "Mood Switcher",
+                "label": "Open Mode Soundtrack",
+                "description": "Choose a playlist source for this mood",
+                "command": "moodSwitcher.openModeSoundtrack"
+              }
+            ],
+            "Soft Focus": [
+              {
+                "group": "Focus",
+                "label": "Quick Open",
+                "description": "Jump gently to the next file",
+                "command": "workbench.action.quickOpen"
+              },
+              {
+                "group": "Focus",
+                "label": "Save",
+                "description": "Bank progress with minimal friction",
+                "command": "workbench.action.files.save"
+              },
+              {
+                "group": "Mood Switcher",
+                "label": "Show Mode Ritual",
+                "description": "Review the current small-step ritual",
+                "command": "moodSwitcher.showModeRitual"
+              }
+            ],
+            "Night Drive": [
+              {
+                "group": "Flow",
+                "label": "Focus Terminal",
+                "description": "Bring the terminal to the foreground",
+                "command": "workbench.action.terminal.focus"
+              },
+              {
+                "group": "Flow",
+                "label": "Run Task",
+                "description": "Kick off a task from the command palette",
+                "command": "workbench.action.tasks.runTask"
+              },
+              {
+                "group": "Mood Switcher",
+                "label": "Open Mode Soundtrack",
+                "description": "Choose a playlist source for this mood",
+                "command": "moodSwitcher.openModeSoundtrack"
+              }
+            ],
+            "Ship It": [
+              {
+                "group": "Ship",
+                "label": "Open Source Control",
+                "description": "Jump into SCM state",
+                "command": "workbench.view.scm"
+              },
+              {
+                "group": "Ship",
+                "label": "Run Task",
+                "description": "Kick off release or validation tasks",
+                "command": "workbench.action.tasks.runTask"
+              },
+              {
+                "group": "Mood Switcher",
+                "label": "Open Ranked Memory Docs",
+                "description": "Open release notes and checklist context",
+                "command": "moodSwitcher.openRankedMemoryDocs"
+              }
+            ]
+          },
+          "description": "Suggested built-in and Mood Switcher commands shown in the mode-aware command palette."
+        },
+        "moodSwitcher.modeTimers": {
+          "type": "object",
+          "default": {
+            "Deep Work": {
+              "durationMinutes": 50
+            },
+            "Debugging Hell": {
+              "durationMinutes": 30
+            },
+            "Writing Lodge": {
+              "durationMinutes": 45
+            },
+            "Arcade Mode": {
+              "durationMinutes": 25
+            },
+            "Soft Focus": {
+              "durationMinutes": 20
+            },
+            "Night Drive": {
+              "durationMinutes": 60
+            },
+            "Ship It": {
+              "durationMinutes": 20
+            }
+          },
+          "description": "Optional per-mode timer defaults in minutes for sessions."
+        },
+        "moodSwitcher.modeRituals": {
+          "type": "object",
+          "default": {
+            "Deep Work": [
+              "Close distractions and focus the main editor.",
+              "Skim the current task or TODO before you begin."
+            ],
+            "Debugging Hell": [
+              "Open the failing test or log first.",
+              "Write down your current hypothesis before chasing branches."
+            ],
+            "Writing Lodge": [
+              "Open the target doc and outline the next section.",
+              "Decide whether this session is drafting, editing, or pruning."
+            ],
+            "Arcade Mode": [
+              "Open the UI surface you want to iterate on.",
+              "Keep the terminal visible for fast feedback."
+            ],
+            "Soft Focus": [
+              "Pick one small next action.",
+              "Give yourself permission to stay narrow and gentle."
+            ],
+            "Night Drive": [
+              "Open the code, terminal, and notes you want for the long haul.",
+              "Decide what done looks like before the session drifts."
+            ],
+            "Ship It": [
+              "Check problems, tests, and release notes first.",
+              "Confirm what needs to ship before polishing extras."
+            ]
+          },
+          "description": "Optional checklist-style rituals shown before a timed session begins."
+        },
+        "moodSwitcher.modeSoundtracks": {
+          "type": "object",
+          "default": {
+            "Deep Work": {
+              "label": "Deep Focus Playlist",
+              "youtubeUrl": "https://music.youtube.com/search?q=deep%20focus%20instrumental",
+              "spotifyUrl": "https://open.spotify.com/search/deep%20focus%20instrumental"
+            },
+            "Debugging Hell": {
+              "label": "Debug Flow Mix",
+              "youtubeUrl": "https://music.youtube.com/search?q=dark%20synth%20coding%20playlist",
+              "spotifyUrl": "https://open.spotify.com/search/dark%20synth%20coding%20playlist"
+            },
+            "Writing Lodge": {
+              "label": "Writing Ambience",
+              "youtubeUrl": "https://music.youtube.com/search?q=writing%20ambient%20playlist",
+              "spotifyUrl": "https://open.spotify.com/search/writing%20ambient%20playlist"
+            },
+            "Arcade Mode": {
+              "label": "Arcade Energy",
+              "youtubeUrl": "https://music.youtube.com/search?q=arcade%20synthwave%20playlist",
+              "spotifyUrl": "https://open.spotify.com/search/arcade%20synthwave%20playlist"
+            },
+            "Soft Focus": {
+              "label": "Gentle Focus",
+              "youtubeUrl": "https://music.youtube.com/search?q=soft%20focus%20playlist",
+              "spotifyUrl": "https://open.spotify.com/search/soft%20focus%20playlist"
+            },
+            "Night Drive": {
+              "label": "Night Drive",
+              "youtubeUrl": "https://music.youtube.com/search?q=night%20drive%20synthwave",
+              "spotifyUrl": "https://open.spotify.com/search/night%20drive%20synthwave"
+            },
+            "Ship It": {
+              "label": "Shipping Momentum",
+              "youtubeUrl": "https://music.youtube.com/search?q=focus%20hype%20playlist",
+              "spotifyUrl": "https://open.spotify.com/search/focus%20hype%20playlist"
+            }
+          },
+          "description": "Optional per-mode soundtrack options. Supports YouTube, Spotify, a custom playlist URL, and a legacy url fallback."
+        },
+        "moodSwitcher.modeTimerCycles": {
+          "type": "object",
+          "default": {
+            "Deep Work": {
+              "breakMinutes": 10,
+              "offerNextFocusBlock": true
+            },
+            "Debugging Hell": {
+              "breakMinutes": 5,
+              "offerNextFocusBlock": true
+            },
+            "Writing Lodge": {
+              "breakMinutes": 10,
+              "offerNextFocusBlock": true
+            },
+            "Arcade Mode": {
+              "breakMinutes": 5,
+              "offerNextFocusBlock": true
+            },
+            "Soft Focus": {
+              "breakMinutes": 5,
+              "offerNextFocusBlock": false
+            },
+            "Night Drive": {
+              "breakMinutes": 15,
+              "offerNextFocusBlock": true
+            },
+            "Ship It": {
+              "breakMinutes": 5,
+              "offerNextFocusBlock": true
+            }
+          },
+          "description": "Optional break-cycle settings used when a timed session ends."
         },
         "moodSwitcher.modeResourceGlobs": {
           "type": "object",
@@ -268,10 +669,158 @@
           },
           "description": "Optional project memory files to open for selected moods."
         },
+        "moodSwitcher.enableSmartProjectMemory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Discover likely .codex, docs, and repo memory files based on the active mood."
+        },
+        "moodSwitcher.modeMemoryKeywords": {
+          "type": "object",
+          "default": {
+            "Deep Work": [
+              "project",
+              "memory",
+              "overview",
+              "plan"
+            ],
+            "Debugging Hell": [
+              "debug",
+              "incident",
+              "bug",
+              "notes"
+            ],
+            "Writing Lodge": [
+              "outline",
+              "brief",
+              "notes",
+              "draft"
+            ],
+            "Arcade Mode": [
+              "design",
+              "ideas",
+              "ux",
+              "assets"
+            ],
+            "Soft Focus": [
+              "todo",
+              "notes",
+              "focus",
+              "plan"
+            ],
+            "Night Drive": [
+              "setup",
+              "roadmap",
+              "notes",
+              "automation"
+            ],
+            "Ship It": [
+              "release",
+              "checklist",
+              "ship",
+              "deploy"
+            ]
+          },
+          "description": "Keywords used to discover repo memory docs for each mood."
+        },
+        "moodSwitcher.modeMemoryProfiles": {
+          "type": "object",
+          "default": {
+            "Deep Work": {
+              "preferredDirectories": [
+                ".codex",
+                "docs",
+                "src"
+              ],
+              "boostFilenames": [
+                "project-memory",
+                "overview",
+                "plan"
+              ]
+            },
+            "Debugging Hell": {
+              "preferredDirectories": [
+                ".codex",
+                "docs",
+                "logs"
+              ],
+              "boostFilenames": [
+                "debug",
+                "incident",
+                "bug",
+                "launch"
+              ]
+            },
+            "Writing Lodge": {
+              "preferredDirectories": [
+                "docs"
+              ],
+              "boostFilenames": [
+                "outline",
+                "brief",
+                "draft"
+              ]
+            },
+            "Arcade Mode": {
+              "preferredDirectories": [
+                "src",
+                "assets",
+                "public"
+              ],
+              "boostFilenames": [
+                "design",
+                "ux",
+                "ideas"
+              ]
+            },
+            "Soft Focus": {
+              "preferredDirectories": [
+                ".codex",
+                "docs",
+                "src"
+              ],
+              "boostFilenames": [
+                "todo",
+                "focus",
+                "notes"
+              ]
+            },
+            "Night Drive": {
+              "preferredDirectories": [
+                ".github",
+                ".vscode",
+                "src"
+              ],
+              "boostFilenames": [
+                "roadmap",
+                "setup",
+                "automation"
+              ]
+            },
+            "Ship It": {
+              "preferredDirectories": [
+                ".github",
+                ".codex",
+                "docs"
+              ],
+              "boostFilenames": [
+                "release",
+                "checklist",
+                "deploy",
+                "ship"
+              ]
+            }
+          },
+          "description": "Optional ranking hints used to score discovered project-memory files per mood."
+        },
         "moodSwitcher.autoOpenResourcesOnModeSwitch": {
           "type": "boolean",
           "default": false,
           "description": "Open the configured resources right after changing moods."
+        },
+        "moodSwitcher.sessionHistoryLimit": {
+          "type": "number",
+          "default": 250,
+          "description": "Maximum number of completed session records to retain for analytics."
         },
         "moodSwitcher.dashboardOpensOnStartup": {
           "type": "boolean",
@@ -321,12 +870,45 @@
     }
   },
   "scripts": {
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "build": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run lint && npm run build",
+    "package:vsix": "vsce package --out ./vsix/mood-driven-theme-switcher-${npm_package_version}.vsix",
+    "package:vsix:no-deps": "vsce package --out ./vsix/mood-driven-theme-switcher-${npm_package_version}.vsix --no-dependencies"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true,
+      "es2022": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2022
+    },
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "ignorePatterns": [
+      "dist",
+      "node_modules",
+      "vsix"
+    ]
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
     "@types/node": "^20.14.10",
     "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.6.2",
+    "eslint": "^8.57.1",
     "typescript": "^5.5.4"
   }
 }
