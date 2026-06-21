@@ -1,0 +1,336 @@
+{
+  "name": "mood-driven-theme-switcher",
+  "displayName": "Mood-Driven Theme Switcher",
+  "description": "Switch VS Code themes, labels, and workflows based on your current working mood.",
+  "version": "0.0.1",
+  "publisher": "local-dev",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Themes",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:moodSwitcher.sidebar",
+    "onCommand:moodSwitcher.openDashboard",
+    "onCommand:moodSwitcher.openDocs",
+    "onCommand:moodSwitcher.activateSpecificMode",
+    "onCommand:moodSwitcher.setSpecificModeAsDefault",
+    "onCommand:moodSwitcher.openSpecificModeResources",
+    "onCommand:moodSwitcher.startSpecificModeSession",
+    "onCommand:moodSwitcher.openDashboardForMode",
+    "onCommand:moodSwitcher.copyMoodSettings",
+    "onCommand:moodSwitcher.previewModePreset",
+    "onCommand:moodSwitcher.selectMode",
+    "onCommand:moodSwitcher.startSession",
+    "onCommand:moodSwitcher.stopSession",
+    "onCommand:moodSwitcher.setWorkspaceDefaultMode",
+    "onCommand:moodSwitcher.openModeResources"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "moodSwitcher",
+          "title": "Mood Switcher",
+          "icon": "resources/mood-switcher.svg"
+        }
+      ]
+    },
+    "views": {
+      "moodSwitcher": [
+        {
+          "id": "moodSwitcher.sidebar",
+          "name": "Modes"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "moodSwitcher.openDashboard",
+        "title": "Mood Switcher: Open Dashboard"
+      },
+      {
+        "command": "moodSwitcher.openDocs",
+        "title": "Mood Switcher: Open Docs"
+      },
+      {
+        "command": "moodSwitcher.activateSpecificMode",
+        "title": "Mood Switcher: Activate Mode"
+      },
+      {
+        "command": "moodSwitcher.setSpecificModeAsDefault",
+        "title": "Mood Switcher: Make Mode Workspace Default"
+      },
+      {
+        "command": "moodSwitcher.openSpecificModeResources",
+        "title": "Mood Switcher: Open Resources For Mode"
+      },
+      {
+        "command": "moodSwitcher.startSpecificModeSession",
+        "title": "Mood Switcher: Start Session For Mode"
+      },
+      {
+        "command": "moodSwitcher.openDashboardForMode",
+        "title": "Mood Switcher: Open Dashboard For Mode"
+      },
+      {
+        "command": "moodSwitcher.copyMoodSettings",
+        "title": "Mood Switcher: Copy Mood Settings"
+      },
+      {
+        "command": "moodSwitcher.previewModePreset",
+        "title": "Mood Switcher: Preview Mode Preset"
+      },
+      {
+        "command": "moodSwitcher.selectMode",
+        "title": "Mood Switcher: Select Mode"
+      },
+      {
+        "command": "moodSwitcher.startSession",
+        "title": "Mood Switcher: Start Session"
+      },
+      {
+        "command": "moodSwitcher.stopSession",
+        "title": "Mood Switcher: Stop Session"
+      },
+      {
+        "command": "moodSwitcher.setWorkspaceDefaultMode",
+        "title": "Mood Switcher: Set Workspace Default Mode"
+      },
+      {
+        "command": "moodSwitcher.clearWorkspaceDefaultMode",
+        "title": "Mood Switcher: Clear Workspace Default Mode"
+      },
+      {
+        "command": "moodSwitcher.openModeResources",
+        "title": "Mood Switcher: Open Mode Resources"
+      }
+    ],
+    "configuration": {
+      "title": "Mood Switcher",
+      "properties": {
+        "moodSwitcher.enableThemeSwitching": {
+          "type": "boolean",
+          "default": true,
+          "description": "Apply a mode-specific color theme when you switch moods."
+        },
+        "moodSwitcher.enableStatusBarLabel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the current mood and active session in the status bar."
+        },
+        "moodSwitcher.enableModePresets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Apply mode-specific workspace and editor layout presets when you switch moods."
+        },
+        "moodSwitcher.modeThemes": {
+          "type": "object",
+          "default": {
+            "Deep Work": "Default Dark Modern",
+            "Debugging Hell": "Default Dark+",
+            "Writing Lodge": "Default Light Modern",
+            "Arcade Mode": "Abyss",
+            "Soft Focus": "Quiet Light",
+            "Night Drive": "Monokai",
+            "Ship It": "Kimbie Dark"
+          },
+          "description": "Maps each mood to a preferred VS Code color theme."
+        },
+        "moodSwitcher.modeSettings": {
+          "type": "object",
+          "default": {
+            "Deep Work": {
+              "editor.minimap.enabled": false,
+              "editor.wordWrap": "off",
+              "breadcrumbs.enabled": true,
+              "workbench.activityBar.location": "hidden",
+              "workbench.editor.showTabs": "single",
+              "zenMode.hideStatusBar": false,
+              "zenMode.hideTabs": true
+            },
+            "Debugging Hell": {
+              "debug.openDebug": "openOnSessionStart",
+              "diffEditor.renderSideBySide": true,
+              "editor.minimap.enabled": true,
+              "problems.visibility": true,
+              "workbench.panel.defaultLocation": "bottom"
+            },
+            "Writing Lodge": {
+              "editor.wordWrap": "on",
+              "editor.minimap.enabled": false,
+              "editor.stickyScroll.enabled": false,
+              "workbench.activityBar.location": "top",
+              "workbench.editor.showTabs": "single"
+            },
+            "Arcade Mode": {
+              "editor.cursorBlinking": "phase",
+              "editor.minimap.enabled": true,
+              "terminal.integrated.defaultLocation": "editor",
+              "workbench.activityBar.location": "bottom",
+              "workbench.sideBar.location": "right"
+            },
+            "Soft Focus": {
+              "editor.minimap.enabled": false,
+              "editor.wordWrap": "bounded",
+              "editor.renderWhitespace": "selection",
+              "workbench.activityBar.location": "hidden",
+              "workbench.editor.showTabs": "single"
+            },
+            "Night Drive": {
+              "editor.cursorSmoothCaretAnimation": "on",
+              "editor.minimap.enabled": false,
+              "terminal.integrated.defaultLocation": "editor",
+              "workbench.activityBar.location": "bottom",
+              "workbench.panel.defaultLocation": "right"
+            },
+            "Ship It": {
+              "files.autoSave": "afterDelay",
+              "files.autoSaveDelay": 1000,
+              "problems.visibility": true,
+              "scm.defaultViewMode": "tree",
+              "workbench.activityBar.location": "top",
+              "workbench.panel.defaultLocation": "bottom"
+            }
+          },
+          "description": "Workspace and editor settings to apply for each mood."
+        },
+        "moodSwitcher.modeResourceGlobs": {
+          "type": "object",
+          "default": {
+            "Deep Work": [
+              "README.md",
+              "docs/**",
+              "src/**"
+            ],
+            "Debugging Hell": [
+              "**/*test*",
+              "**/*spec*",
+              "logs/**",
+              ".vscode/launch.json"
+            ],
+            "Writing Lodge": [
+              "README.md",
+              "docs/**",
+              "**/*.md"
+            ],
+            "Arcade Mode": [
+              "src/**",
+              "assets/**",
+              "public/**"
+            ],
+            "Soft Focus": [
+              "README.md",
+              "src/**"
+            ],
+            "Night Drive": [
+              "src/**",
+              ".github/**",
+              ".vscode/**"
+            ],
+            "Ship It": [
+              "package.json",
+              "CHANGELOG.md",
+              ".github/**",
+              ".vscode/**"
+            ]
+          },
+          "description": "Glob patterns the extension uses when opening mode-related project files."
+        },
+        "moodSwitcher.modeMemoryFiles": {
+          "type": "object",
+          "default": {
+            "Deep Work": [
+              ".codex/project-memory.md",
+              "docs/project-memory.md"
+            ],
+            "Debugging Hell": [
+              ".codex/debug-notes.md",
+              "docs/debug-notes.md"
+            ],
+            "Ship It": [
+              ".codex/release-checklist.md",
+              "docs/release-checklist.md"
+            ]
+          },
+          "description": "Optional project memory files to open for selected moods."
+        },
+        "moodSwitcher.autoOpenResourcesOnModeSwitch": {
+          "type": "boolean",
+          "default": false,
+          "description": "Open the configured resources right after changing moods."
+        },
+        "moodSwitcher.dashboardOpensOnStartup": {
+          "type": "boolean",
+          "default": false,
+          "description": "Open the Mood Switcher dashboard when the workspace starts."
+        }
+      }
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "moodSwitcher.openDashboard",
+          "when": "view == moodSwitcher.sidebar",
+          "group": "navigation@1"
+        },
+        {
+          "command": "moodSwitcher.openDocs",
+          "when": "view == moodSwitcher.sidebar",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "moodSwitcher.activateSpecificMode",
+          "when": "view == moodSwitcher.sidebar && viewItem == mood",
+          "group": "inline@1"
+        },
+        {
+          "command": "moodSwitcher.openSpecificModeResources",
+          "when": "view == moodSwitcher.sidebar && viewItem == mood",
+          "group": "inline@2"
+        },
+        {
+          "command": "moodSwitcher.startSpecificModeSession",
+          "when": "view == moodSwitcher.sidebar && viewItem == mood",
+          "group": "navigation@1"
+        },
+        {
+          "command": "moodSwitcher.setSpecificModeAsDefault",
+          "when": "view == moodSwitcher.sidebar && viewItem == mood",
+          "group": "navigation@2"
+        },
+        {
+          "command": "moodSwitcher.openDashboardForMode",
+          "when": "view == moodSwitcher.sidebar && viewItem == mood",
+          "group": "navigation@3"
+        },
+        {
+          "command": "moodSwitcher.previewModePreset",
+          "when": "view == moodSwitcher.sidebar && viewItem == mood",
+          "group": "navigation@4"
+        },
+        {
+          "command": "moodSwitcher.copyMoodSettings",
+          "when": "view == moodSwitcher.sidebar && viewItem == mood",
+          "group": "navigation@5"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.5.4"
+  }
+}
