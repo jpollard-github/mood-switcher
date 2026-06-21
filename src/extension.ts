@@ -49,9 +49,12 @@ interface SettingSnapshot {
   value: unknown;
 }
 
+type RestoreSnapshot = Record<string, SettingSnapshot>;
+
 const ACTIVE_MOOD_KEY = "moodSwitcher.activeMood";
 const WORKSPACE_DEFAULT_MOOD_KEY = "moodSwitcher.workspaceDefaultMood";
 const SESSION_STATE_KEY = "moodSwitcher.session";
+const RESTORE_SNAPSHOT_KEY = "moodSwitcher.restoreSnapshot";
 const DASHBOARD_VIEW_TYPE = "moodSwitcher.dashboard";
 
 const MOODS: MoodDefinition[] = [
@@ -155,6 +158,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
       await previewModePreset(context, mood);
     }),
+    vscode.commands.registerCommand("moodSwitcher.restoreOriginalWorkspaceState", async () => {
+      await restoreOriginalWorkspaceState(context, true);
+    }),
+    vscode.commands.registerCommand("moodSwitcher.resetWorkspaceToUserSettings", async () => {
+      await resetWorkspaceToUserSettings(context, true);
+    }),
     vscode.commands.registerCommand("moodSwitcher.selectMode", async () => {
       const selected = await pickMood();
       if (selected) {
@@ -251,6 +260,7 @@ async function applyMood(
   mood: MoodName,
   options?: { promptForSession?: boolean }
 ): Promise<void> {
+  await ensureRestoreSnapshot(context);
   await context.workspaceState.update(ACTIVE_MOOD_KEY, mood);
   await maybeApplyTheme(mood);
   await maybeApplyPreset(mood);
@@ -307,8 +317,19 @@ async function maybeApplyPreset(mood: MoodName): Promise<void> {
     return;
   }
 
+  const failedSettings: string[] = [];
   for (const [settingPath, value] of Object.entries(settings)) {
-    await updateWorkspaceSetting(settingPath, value);
+    try {
+      await updateWorkspaceSetting(settingPath, value);
+    } catch {
+      failedSettings.push(settingPath);
+    }
+  }
+
+  if (failedSettings.length > 0) {
+    vscode.window.showWarningMessage(
+      `Mood Switcher skipped ${failedSettings.length} invalid or unsupported setting(s) for ${mood}: ${failedSettings.join(", ")}.`
+    );
   }
 }
 
@@ -357,6 +378,8 @@ async function stopSession(context: vscode.ExtensionContext, notify: boolean): P
     const elapsed = formatDuration(Date.now() - session.startedAt);
     vscode.window.showInformationMessage(`Stopped ${session.mood} session after ${elapsed}.`);
   }
+
+  await restoreOriginalWorkspaceState(context, false);
 }
 
 function resumeSessionTimer(context: vscode.ExtensionContext, session: SessionState): void {
@@ -562,6 +585,78 @@ function openDashboard(context: vscode.ExtensionContext): void {
 
 function refreshViews(): void {
   sidebarProvider?.refresh();
+}
+
+async function ensureRestoreSnapshot(context: vscode.ExtensionContext): Promise<void> {
+  const existing = normalizeRestoreSnapshot(context.workspaceState.get<unknown>(RESTORE_SNAPSHOT_KEY));
+  if (existing) {
+    return;
+  }
+
+  const snapshot: RestoreSnapshot = {};
+  for (const settingPath of getManagedSettingPaths()) {
+    snapshot[settingPath] = getSettingSnapshot(settingPath);
+  }
+
+  await context.workspaceState.update(RESTORE_SNAPSHOT_KEY, snapshot);
+}
+
+async function restoreOriginalWorkspaceState(
+  context: vscode.ExtensionContext,
+  notify: boolean
+): Promise<void> {
+  const snapshot = normalizeRestoreSnapshot(context.workspaceState.get<unknown>(RESTORE_SNAPSHOT_KEY));
+  if (!snapshot) {
+    if (notify) {
+      vscode.window.showInformationMessage("No original workspace state snapshot is available to restore.");
+    }
+    return;
+  }
+
+  for (const [settingPath, original] of Object.entries(snapshot)) {
+    await restoreWorkspaceSetting(settingPath, original);
+  }
+
+  await context.workspaceState.update(RESTORE_SNAPSHOT_KEY, undefined);
+  await context.workspaceState.update(ACTIVE_MOOD_KEY, undefined);
+  dashboardSpotlightMood = undefined;
+  updateStatusBar(context);
+  updateDashboard(context);
+  refreshViews();
+
+  if (notify) {
+    vscode.window.showInformationMessage("Restored the original workspace theme and layout settings.");
+  }
+}
+
+async function resetWorkspaceToUserSettings(
+  context: vscode.ExtensionContext,
+  notify: boolean
+): Promise<void> {
+  for (const settingPath of getManagedSettingPaths()) {
+    await clearWorkspaceSetting(settingPath);
+  }
+
+  await context.workspaceState.update(RESTORE_SNAPSHOT_KEY, undefined);
+  await context.workspaceState.update(ACTIVE_MOOD_KEY, undefined);
+  await context.workspaceState.update(WORKSPACE_DEFAULT_MOOD_KEY, undefined);
+  await context.workspaceState.update(SESSION_STATE_KEY, undefined);
+
+  if (sessionTimer) {
+    clearInterval(sessionTimer);
+    sessionTimer = undefined;
+  }
+
+  dashboardSpotlightMood = undefined;
+  updateStatusBar(context);
+  updateDashboard(context);
+  refreshViews();
+
+  if (notify) {
+    vscode.window.showInformationMessage(
+      "Cleared workspace mood overrides. This workspace will now fall back to your normal user/default settings."
+    );
+  }
 }
 
 function updateDashboard(context: vscode.ExtensionContext): void {
@@ -959,6 +1054,20 @@ class MoodSidebarProvider implements vscode.TreeDataProvider<SidebarNode> {
         actionNode("action.pick", "Pick Mood", "Command palette picker", "list-selection", "moodSwitcher.selectMode"),
         actionNode("action.start", "Start Session", "Start timing the current mood", "play", "moodSwitcher.startSession"),
         actionNode("action.stop", "Stop Session", "Stop the current timer", "debug-stop", "moodSwitcher.stopSession"),
+        actionNode(
+          "action.restore",
+          "Restore Original Workspace State",
+          "Roll back to the pre-mood theme and managed layout settings",
+          "history",
+          "moodSwitcher.restoreOriginalWorkspaceState"
+        ),
+        actionNode(
+          "action.reset",
+          "Reset Workspace To User Settings",
+          "Clear workspace mood overrides and fall back to normal user settings",
+          "discard",
+          "moodSwitcher.resetWorkspaceToUserSettings"
+        ),
         actionNode("action.resources", "Open Mode Resources", "Jump to the files for this mood", "files", "moodSwitcher.openModeResources"),
         actionNode("action.default", "Set Workspace Default", "Persist a default mood for this project", "pin", "moodSwitcher.setWorkspaceDefaultMode"),
         actionNode("action.clearDefault", "Clear Workspace Default", "Remove the saved workspace default", "pinned-dirty", "moodSwitcher.clearWorkspaceDefaultMode")
@@ -1154,6 +1263,51 @@ function getSettingSnapshot(settingPath: string): SettingSnapshot {
   };
 }
 
+async function restoreWorkspaceSetting(settingPath: string, snapshot: SettingSnapshot): Promise<void> {
+  const [section, ...rest] = settingPath.split(".");
+  if (!section || rest.length === 0) {
+    return;
+  }
+
+  const key = rest.join(".");
+  const workspaceValue =
+    snapshot.scope === "workspace"
+      ? snapshot.value
+      : undefined;
+
+  await vscode.workspace.getConfiguration(section).update(
+    key,
+    workspaceValue,
+    vscode.ConfigurationTarget.Workspace
+  );
+}
+
+async function clearWorkspaceSetting(settingPath: string): Promise<void> {
+  const [section, ...rest] = settingPath.split(".");
+  if (!section || rest.length === 0) {
+    return;
+  }
+
+  await vscode.workspace.getConfiguration(section).update(
+    rest.join("."),
+    undefined,
+    vscode.ConfigurationTarget.Workspace
+  );
+}
+
+function getManagedSettingPaths(): string[] {
+  const settings = getConfiguration<MoodSettingsMap>("modeSettings");
+  const keys = new Set<string>(["workbench.colorTheme"]);
+
+  for (const moodSettings of Object.values(settings)) {
+    for (const settingPath of Object.keys(moodSettings)) {
+      keys.add(settingPath);
+    }
+  }
+
+  return Array.from(keys);
+}
+
 function buildMoodExport(mood: MoodName): string {
   const themes = getConfiguration<Record<string, string>>("modeThemes");
   const payload = {
@@ -1181,4 +1335,31 @@ function formatDiffValue(value: unknown): string {
 
 function areValuesEqual(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function normalizeRestoreSnapshot(value: unknown): RestoreSnapshot | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const snapshotEntries = Object.entries(value as Record<string, unknown>);
+  const snapshot: RestoreSnapshot = {};
+
+  for (const [key, entry] of snapshotEntries) {
+    if (!entry || typeof entry !== "object") {
+      return undefined;
+    }
+
+    const candidate = entry as Partial<SettingSnapshot>;
+    if (typeof candidate.scope !== "string") {
+      return undefined;
+    }
+
+    snapshot[key] = {
+      scope: candidate.scope,
+      value: candidate.value
+    };
+  }
+
+  return snapshot;
 }

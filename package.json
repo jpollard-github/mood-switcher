@@ -24,6 +24,8 @@
     "onCommand:moodSwitcher.openDashboardForMode",
     "onCommand:moodSwitcher.copyMoodSettings",
     "onCommand:moodSwitcher.previewModePreset",
+    "onCommand:moodSwitcher.restoreOriginalWorkspaceState",
+    "onCommand:moodSwitcher.resetWorkspaceToUserSettings",
     "onCommand:moodSwitcher.selectMode",
     "onCommand:moodSwitcher.startSession",
     "onCommand:moodSwitcher.stopSession",
@@ -85,6 +87,14 @@
       {
         "command": "moodSwitcher.previewModePreset",
         "title": "Mood Switcher: Preview Mode Preset"
+      },
+      {
+        "command": "moodSwitcher.restoreOriginalWorkspaceState",
+        "title": "Mood Switcher: Restore Original Workspace State"
+      },
+      {
+        "command": "moodSwitcher.resetWorkspaceToUserSettings",
+        "title": "Mood Switcher: Reset Workspace To User Settings"
       },
       {
         "command": "moodSwitcher.selectMode",
@@ -151,8 +161,7 @@
               "breadcrumbs.enabled": true,
               "workbench.activityBar.location": "hidden",
               "workbench.editor.showTabs": "single",
-              "zenMode.hideStatusBar": false,
-              "zenMode.hideTabs": true
+              "zenMode.hideStatusBar": false
             },
             "Debugging Hell": {
               "debug.openDebug": "openOnSessionStart",
@@ -172,8 +181,7 @@
               "editor.cursorBlinking": "phase",
               "editor.minimap.enabled": true,
               "terminal.integrated.defaultLocation": "editor",
-              "workbench.activityBar.location": "bottom",
-              "workbench.sideBar.location": "right"
+              "workbench.activityBar.location": "bottom"
             },
             "Soft Focus": {
               "editor.minimap.enabled": false,
@@ -273,18 +281,6 @@
       }
     },
     "menus": {
-      "view/title": [
-        {
-          "command": "moodSwitcher.openDashboard",
-          "when": "view == moodSwitcher.sidebar",
-          "group": "navigation@1"
-        },
-        {
-          "command": "moodSwitcher.openDocs",
-          "when": "view == moodSwitcher.sidebar",
-          "group": "navigation@2"
-        }
-      ],
       "view/item/context": [
         {
           "command": "moodSwitcher.activateSpecificMode",
